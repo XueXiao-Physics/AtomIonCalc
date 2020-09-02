@@ -17,7 +17,7 @@ print(' > Welcome.')
 
 arg = input('\n >>>>> Please type in the element you choose... \n > element : ')
 
-elements = [Xe,O,Al,Ca,Fe,Ma,Ni,Si,S,Na]
+elements = [Xe,O,Al,Ca,Fe,Mg,Ni,Si,S,Na]
 element_dict = {e.name:e for e in elements}
 
 

@@ -232,7 +232,7 @@ Fe = element('Fe',C,Z,n_list,E_B,Z_eff)
 
 '''
 
-Ma
+Mg
 
 '''
 
@@ -260,7 +260,7 @@ for n in range(len(E_B)):
         Z_eff[n].append((n+1) * np.sqrt(-2*E_B[n][l] / au))
 
 
-Ma = element('Ma',C,Z,n_list,E_B,Z_eff)
+Mg = element('Mg',C,Z,n_list,E_B,Z_eff)
 
 '''
 
