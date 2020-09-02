@@ -1,6 +1,5 @@
 from input_params import *
 from methods import *
-from units import *
 import multiprocess 
 import sys
 import os

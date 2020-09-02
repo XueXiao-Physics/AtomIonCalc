@@ -3,7 +3,7 @@
 
 # In[1]:
 
-
+from input_params import *
 import numpy as np
 import tqdm
 import matplotlib.pyplot as plt
@@ -14,7 +14,7 @@ import scipy.integrate
 import h5py
 import sys
 from sympy.physics.wigner import gaunt
-from units import *
+
 
 '''
 
