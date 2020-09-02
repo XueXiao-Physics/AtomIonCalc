@@ -7,7 +7,6 @@ from input_params import *
 import numpy as np
 import tqdm
 import matplotlib.pyplot as plt
-import units
 import scipy.special as ssp
 import mpmath as mp
 import scipy.integrate
