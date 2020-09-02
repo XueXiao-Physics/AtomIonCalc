@@ -18,7 +18,7 @@ print(' > Welcome.')
 
 arg = input('\n >>>>> Please type in the element you choose... \n > element : ')
 
-elements = [Xe,O,Al,Ca,Ir,Ma,Si,Su,So]
+elements = [Xe,O,Al,Ca,Fe,Ma,Ni,Si,Su,So]
 element_dict = {e.name:e for e in elements}
 
 
@@ -76,10 +76,11 @@ rmin,rmax = 0,30*a0
 kPrime_grid = np.logspace(-1,2,N2)*keV
 q_grid = np.logspace(0,3,N3)*keV
 
+
 print(' > Gridding parameters : ','\n > ',[N1,N2,N3],'\n')
 print(' > rmin , rmax (1/eV) (Legendre Polynomials roots)','\n > ',[rmin,rmax],'\n')
-print(' > kPrime_min , kPrime_max (1/eV)  (log spaced)','\n > ', [kPrime_grid.min() , kPrime_grid.max()],'\n')
-print(' > q_min , q_max (1/eV) (log spaced)','\n > ',[q_grid.min(),q_grid.max()],'\n')
+print(' > kPrime_min , kPrime_max (1/eV)','\n > ', [kPrime_grid.min() , kPrime_grid.max()],'\n')
+print(' > q_min , q_max (1/eV)','\n > ',[q_grid.min(),q_grid.max()],'\n')
 
 input("\n >>>>> If alright, press Enter to start calculation ... <<<<<")
 # interface end
@@ -117,5 +118,6 @@ for job in jobs:
     job.join()
 
 
+input('\n >>>>> Done. Press Enter to exit... <<<<<')
 
 
