@@ -44,7 +44,7 @@ Interface
 print(' > Welcome. Please run the code after you have got the data.')
 
 # Choose element
-elements = [Xe,O,Al,Ca,Fe,Ma,Ni,Si,Su,So]
+elements = [Xe,O,Al,Ca,Fe,Ma,Ni,Si,S,Na]
 element_dict = {e.name:e for e in elements}
 arg = input('\n >>>>> Please type in the element you choose... \n > element : ')
 

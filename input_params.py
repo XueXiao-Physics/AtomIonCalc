@@ -33,7 +33,7 @@ class element:
 
 '''
 
-Xe
+Xe (Xenon)
 
 '''  
 C = [[[-0.965401, -0.040350, 0.001890, -0.003868, -0.000263,
@@ -330,7 +330,7 @@ Si = element('Si',C,Z,n_list,E_B,Z_eff)
 
 '''
 
-Su
+S
 
 '''
 
@@ -360,12 +360,12 @@ for n in range(len(E_B)):
     for l in range(len(E_B[n])):
         Z_eff[n].append((n+1) * np.sqrt(-2*E_B[n][l] / au))
 
-Su = element('Su',C,Z,n_list,E_B,Z_eff)
+S = element('S',C,Z,n_list,E_B,Z_eff)
 
 
 '''
 
-So
+Na
 
 '''
 
@@ -392,4 +392,4 @@ for n in range(len(E_B)):
     for l in range(len(E_B[n])):
         Z_eff[n].append((n+1) * np.sqrt(-2*E_B[n][l] / au))
 
-So = element('So',C,Z,n_list,E_B,Z_eff)
+Na = element('Na',C,Z,n_list,E_B,Z_eff)
