@@ -20,16 +20,17 @@ Basic data structure.
 
 '''
 class element:
-    def __init__(self, name ,C,Z,n_list,E_B,Z_eff):
+    def __init__(self, name ,C,Z,n_list,E_B,Z_eff,semi_full):
         self.name = name
         self.C = C
         self.Z = Z
         self.n_list = n_list
         self.E_B = E_B
         self.Z_eff = Z_eff
+        self.semi_full = semi_full
 
     def call(self):
-        return self.name, self.C , self.Z , self.n_list , self.E_B , self.Z_eff
+        return self.name, self.C , self.Z , self.n_list , self.E_B , self.Z_eff , self.semi_full
 
 '''
 
@@ -90,6 +91,8 @@ E_B = [ [-1224.397767 * au] ,
        [-7.856291 * au,-6.008328 * au,-2.777871 * au] ,
        [-0.944407 * au,-0.457283 * au] ]
 
+
+
 # Effective charge
 Z_eff=[]
 for n in range(len(E_B)):
@@ -97,7 +100,9 @@ for n in range(len(E_B)):
     for l in range(len(E_B[n])):
         Z_eff[n].append((n+1) * np.sqrt(-2*E_B[n][l] / au))
 
-Xe = element('Xe',C,Z,n_list,E_B,Z_eff)
+semi_full = {}
+
+Xe = element('Xe',C,Z,n_list,E_B,Z_eff,semi_full)
 
 
 '''
@@ -126,7 +131,9 @@ for n in range(len(E_B)):
     for l in range(len(E_B[n])):
         Z_eff[n].append((n+1) * np.sqrt(-2*E_B[n][l] / au))
 
-O = element('O',C,Z,n_list,E_B,Z_eff)
+semi_full = {(2,1):(4,6)}
+
+O = element('O',C,Z,n_list,E_B,Z_eff,semi_full)
 
 
 '''
@@ -155,7 +162,9 @@ for n in range(len(E_B)):
     for l in range(len(E_B[n])):
         Z_eff[n].append((n+1) * np.sqrt(-2*E_B[n][l] / au))
 
-Al = element('Al',C,Z,n_list,E_B,Z_eff)
+semi_full = {(3,1):(1,6)}
+
+Al = element('Al',C,Z,n_list,E_B,Z_eff,semi_full)
 
 
 '''
@@ -191,7 +200,9 @@ for n in range(len(E_B)):
     for l in range(len(E_B[n])):
         Z_eff[n].append((n+1) * np.sqrt(-2*E_B[n][l] / au))
 
-Ca = element('Ca',C,Z,n_list,E_B,Z_eff)
+semi_full={}
+
+Ca = element('Ca',C,Z,n_list,E_B,Z_eff,semi_full)
 
 
 '''
@@ -227,8 +238,9 @@ for n in range(len(E_B)):
     for l in range(len(E_B[n])):
         Z_eff[n].append((n+1) * np.sqrt(-2*E_B[n][l] / au))
 
+semi_full = {(3,2):(6,10)}
 
-Fe = element('Fe',C,Z,n_list,E_B,Z_eff)
+Fe = element('Fe',C,Z,n_list,E_B,Z_eff,semi_full)
 
 '''
 
@@ -259,8 +271,9 @@ for n in range(len(E_B)):
     for l in range(len(E_B[n])):
         Z_eff[n].append((n+1) * np.sqrt(-2*E_B[n][l] / au))
 
+semi_full = {}
 
-Mg = element('Mg',C,Z,n_list,E_B,Z_eff)
+Mg = element('Mg',C,Z,n_list,E_B,Z_eff,semi_full)
 
 '''
 
@@ -294,7 +307,10 @@ for n in range(len(E_B)):
     for l in range(len(E_B[n])):
         Z_eff[n].append((n+1) * np.sqrt(-2*E_B[n][l] / au))
 
-Ni = element('Ni',C,Z,n_list,E_B,Z_eff)
+semi_full = {(3,2):(8,10)}
+
+Ni = element('Ni',C,Z,n_list,E_B,Z_eff,semi_full)
+
 
 '''
 
@@ -325,7 +341,9 @@ for n in range(len(E_B)):
     for l in range(len(E_B[n])):
         Z_eff[n].append((n+1) * np.sqrt(-2*E_B[n][l] / au))
 
-Si = element('Si',C,Z,n_list,E_B,Z_eff)
+semi_full = {(3,1):(2,6)} 
+
+Si = element('Si',C,Z,n_list,E_B,Z_eff,semi_full)
 
 
 '''
@@ -360,14 +378,15 @@ for n in range(len(E_B)):
     for l in range(len(E_B[n])):
         Z_eff[n].append((n+1) * np.sqrt(-2*E_B[n][l] / au))
 
-S = element('S',C,Z,n_list,E_B,Z_eff)
+semi_full = {(3,1):(4,6)}
+S = element('S',C,Z,n_list,E_B,Z_eff,semi_full)
 
 
 '''
 
 Na
 
-'''
+
 
 # C_nlj
 C = [[[0.387167,0.434278,0.213027,0.002205,0.000627,-0.000044,-0.000649,0.000026,-0.000023,0.000008] ] ,
@@ -393,3 +412,4 @@ for n in range(len(E_B)):
         Z_eff[n].append((n+1) * np.sqrt(-2*E_B[n][l] / au))
 
 Na = element('Na',C,Z,n_list,E_B,Z_eff)
+'''

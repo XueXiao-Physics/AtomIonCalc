@@ -44,7 +44,7 @@ Interface
 print(' > Welcome. Please run the code after you have got the data.')
 
 # Choose element
-elements = [Xe,O,Al,Ca,Fe,Mg,Ni,Si,S,Na]
+elements = [Xe,O,Al,Ca,Fe,Mg,Ni,Si,S]
 element_dict = {e.name:e for e in elements}
 arg = input('\n >>>>> Please type in the element you choose... \n > element : ')
 
@@ -52,7 +52,7 @@ if arg not in element_dict.keys():
     print(' \n > The element you ask for is not available.')
     sys.exit()
 else:
-    name,C,Z,n_list,E_B,Z_eff = element_dict[arg].call()
+    name,C,Z,n_list,E_B,Z_eff,semi_full = element_dict[arg].call()
     datadir = 'OUTPUT/'+name
     files = glob.glob(datadir+'/*')
 

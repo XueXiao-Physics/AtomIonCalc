@@ -17,7 +17,8 @@ print(' > Welcome.')
 
 arg = input('\n >>>>> Please type in the element you choose... \n > element : ')
 
-elements = [Xe,O,Al,Ca,Fe,Mg,Ni,Si,S,Na]
+#elements = [Xe,O,Al,Ca,Fe,Mg,Ni,Si,S,Na]
+elements = [Xe,O,Al,Ca,Fe,Mg,Ni,Si,S]
 element_dict = {e.name:e for e in elements}
 
 
@@ -25,7 +26,7 @@ if arg not in element_dict.keys():
     print(' > The element you ask for is not available.')
     sys.exit()
 else:
-    name,C,Z,n_list,E_B,Z_eff = element_dict[arg].call()
+    name,C,Z,n_list,E_B,Z_eff,semi_full = element_dict[arg].call()
     
 input("\n >>>>> Press Enter to create directory... <<<<<")  
 
@@ -93,7 +94,13 @@ pipelines = []
 for it in range(len(combination)):
 
     c = combination[it]
-    pipe = pipeline(C,Z,n_list,E_B,Z_eff)
+
+    try: 
+        fac = semi_full[c][0]/semi_full[c][1] 
+    except KeyError: 
+        fac = 1.
+            
+    pipe = pipeline(C,Z,n_list,E_B,Z_eff,fac)
 
     pipe.set_demanded_n_l( [c[0]] , [c[1]] )
     pipe.set_r_grid(rmin,rmax,N1) 

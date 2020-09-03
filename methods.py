@@ -50,13 +50,14 @@ main
 
 class pipeline:
 
-    def __init__(self,C,Z,n_list,E_B,Z_eff):
+    def __init__(self,C,Z,n_list,E_B,Z_eff,fac):
 
         self.C = C
         self.Z = Z
         self.n_list = n_list
         self.E_B = E_B
         self.Z_eff = Z_eff
+        self.fac = fac # impose a general normalization factor, K -> fac*K
         self._create_entire_quantum_number_list()
         self.set_demanded_n_l(None,None)
         
@@ -359,7 +360,7 @@ class pipeline:
             Atomic_Response_W1[it] = np.sum( raw_w1[ np.where(QNL_nl_Aux==it)[0],:,:] ,axis=0)\
              * 4 * (self.kPrime_grid**3)[None,:,None] / (2*np.pi)**3
 
-        self.Atomic_Response_W1 = Atomic_Response_W1
+        self.Atomic_Response_W1 = self.fac * Atomic_Response_W1
         
 
 
