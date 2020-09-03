@@ -97,7 +97,7 @@ for it in range(len(combination)):
 
     try: 
         fac = semi_full[c][0]/semi_full[c][1] 
-        print(c,'%.2f'fac)
+        print(c,'%.2f'%fac)
     except KeyError: 
         fac = 1.
             
