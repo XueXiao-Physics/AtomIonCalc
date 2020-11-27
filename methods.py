@@ -69,22 +69,24 @@ class pipeline:
         self.R_nlr_list = None
         self.R_final_nllkr_List = None
         self.Spherical_Jn_Lqr_List = None
-        self.Integral = None
+        self.I1 = None
+        self.I2 = None
+        self.I3 = None
         self.Atomic_Response_W1 = None
         self.Atomic_Response_K = None
 
 
    
 
-    def save_which(self,start=0,stop=10):
+    def save_which(self,start=0,stop=12):
 
-        name_list = ['QN_nllL','r_grid','kPrime_grid','q_grid',\
+        name_list = ['QN_nllL','r_grid','kPrime_grid','q_grid',
                 'R_nlr_list','R_final_nllkr_List','Spherical_Jn_Lqr_List',
-                'Integral','Atomic_Response_W1','Atomic_Response_K']
+                'I1','I2','I3','Atomic_Response_W1','Atomic_Response_K']
 
-        save_list = [self.QN_nllL,self.r_grid,self.kPrime_grid,self.q_grid,\
+        save_list = [self.QN_nllL,self.r_grid,self.kPrime_grid,self.q_grid,
                 self.R_nlr_list,self.R_final_nllkr_List,self.Spherical_Jn_Lqr_List,
-                self.Integral,self.Atomic_Response_W1,self.Atomic_Response_K]
+                self.I1,self.I2,self.I3,self.Atomic_Response_W1,self.Atomic_Response_K]
 
         for i in range(start,stop):
             if type(save_list[i])==type(None):
@@ -254,7 +256,7 @@ class pipeline:
     # To calculate I1(q=0,kPrime) with (n,l,lPrime=l,L=0), it is to be subtracted from I1.
     def get_I1q0(self):
         size = len(self.QN_nl)
-        Integral = np.ndarray((size,self.Nk))
+        I1_q0 = np.ndarray((size,self.Nk))
         
         L0_index = np.where(self.QN_L ==0)[0] # find L=0 in L list
 
@@ -264,52 +266,87 @@ class pipeline:
             index_nll = np.where( (self.QN_nll==np.array([n,l,l])[None,:]).all(axis=1) )[0] # find (n,l,lPrime=l)
             # (List,k,r)
             Integrand = (self.r_grid**2)[None,None,:] * self.R_nlr_list[index_nl,None,:]\
-                    * self.R_final_nllkr_List[index_nll,:,:] * 1 #ssp.spherical_jn(0 ,0*r_mesh) = 1
+                    * self.R_final_nllkr_List[index_nll,:,:] * 1. #ssp.spherical_jn(0 ,0*r_mesh) = 1
             # (List,k)        
-            Integral[it] = 0.5*(self.rmax-self.rmin)* np.sum(self.r_weight[None,None,:]*Integrand,axis=2)
+            I1_q0[it] = 0.5*(self.rmax-self.rmin)* np.sum(self.r_weight[None,None,:]*Integrand,axis=2)
             
-        self.Integral_q0 = Integral
+        self.I1_q0 = I1_q0
             
             
 
 
+    '''
+    Calculate Radial Integrals
+    '''
 
-
-    # I1, (n,l,lPrime,L)
-    # (List,k,q,r)
+    # I1 quantum numbers : (n,l,lPrime,L)
+    # [List,k,q,r]
     def get_I1(self):
  
         size = len(self.QN_nllL)
-        Integral = np.ndarray((size,self.Nk,self.Nq))
+        I1 = np.ndarray((size,self.Nk,self.Nq))
 
         for it in range(size):
             n,l,lPrime,L = self.QN_nllL[it]
             
             index_nl = np.where( (self.QN_nl[:,:]==[n,l]).all(axis=1) )[0]
             index_nll = np.where( (self.QN_nll[:,:]==[n,l,lPrime]).all(axis=1) )[0]
-            index_L = np.where( (self.QN_L[:,:]==[L]).all(axis=1) )[0]
-            
+            index_L = np.where( (self.QN_L[:,:]==[L]).all(axis=1) )[0]            
 
             Integrand = (self.r_grid**2)[None,None,None,:] * self.R_nlr_list[index_nl,None,None,:]\
                     * self.R_final_nllkr_List[index_nll,:,None,:] * self.Spherical_Jn_Lqr_List[index_L,None,:,:]
                          
-            Integral_raw = 0.5*(self.rmax-self.rmin)* np.sum(self.r_weight[None,None,None,:]*Integrand,axis=3)
+            I1[it] = 0.5*(self.rmax-self.rmin)* np.sum(self.r_weight[None,None,None,:]*Integrand,axis=3)       
+
+        self.I1 = I1
+        
+        
+    def get_I2(self):
+ 
+        size = len(self.QN_nllL)
+        I2 = np.ndarray((size,self.Nk,self.Nq))
+
+        for it in range(size):
+            n,l,lPrime,L = self.QN_nllL[it]
             
+            index_nl = np.where( (self.QN_nl[:,:]==[n,l]).all(axis=1) )[0]
+            index_nll = np.where( (self.QN_nll[:,:]==[n,l,lPrime]).all(axis=1) )[0]
+            index_L = np.where( (self.QN_L[:,:]==[L]).all(axis=1) )[0]            
             
-            #if l==lPrime and L==0:
-            #    Integral_new = Integral_raw - self.Integral_q0[index_nl][:,None]
-            #    Integral_raw = np.where(abs(Integral_new)<abs(Integral_raw) , Integral_new , Integral_raw)
-            #    print('subtracted')
-                
-            Integral[it] = Integral_raw
+            dRdr = np.diff( self.Spherical_Jn_Lqr_List[:,:,:] , axis=2 )
+            dRdr = np.dstack([dRdr,dRdr[:,:,-1][:,:,None]])
+            Integrand = (self.r_grid**2)[None,None,None,:] * self.R_nlr_list[index_nl,None,None,:]\
+                    * self.R_final_nllkr_List[index_nll,:,None,:] * dRdr[index_L,None,:,:]
+                         
+            I2[it] = 0.5*(self.rmax-self.rmin)* np.sum(self.r_weight[None,None,None,:]*Integrand,axis=3)
+
+        self.I2 = I2
+        
+        
+    def get_I3(self):
+ 
+        size = len(self.QN_nllL)
+        I3 = np.ndarray((size,self.Nk,self.Nq))
+
+        for it in range(size):
+            n,l,lPrime,L = self.QN_nllL[it]
+            
+            index_nl = np.where( (self.QN_nl[:,:]==[n,l]).all(axis=1) )[0]
+            index_nll = np.where( (self.QN_nll[:,:]==[n,l,lPrime]).all(axis=1) )[0]
+            index_L = np.where( (self.QN_L[:,:]==[L]).all(axis=1) )[0]            
+            
+            Integrand = self.r_grid[None,None,None,:] * self.R_nlr_list[index_nl,None,None,:]\
+                    * self.R_final_nllkr_List[index_nll,:,None,:] * self.Spherical_Jn_Lqr_List[index_L,None,:,:]
+                         
+            I3[it] = 0.5*(self.rmax-self.rmin)* np.sum(self.r_weight[None,None,None,:]*Integrand,axis=3)
             
 
-        self.Integral = Integral
-         
-        
-
+        self.I3 = I3
         
         
+    '''
+    Atomic Response
+    '''
 
 
     def get_W1_atomic_response(self):
@@ -333,10 +370,10 @@ class pipeline:
             for j in index_nllL:
                 n,l,lPrime,L = self.QN_nllL[j]
                 coeff = (2*l+1)*(2*lPrime+1)*(2*L+1)*wigner_3j(l,lPrime,L,0,0,0)**2
-                W1[i] = W1[i] + self.Integral[j]**2 * coeff * 4 * self.kPrime_grid[:,None]**3 /( 2*np.pi )**3
+                W1[i] = W1[i] + self.I1[j]**2 * coeff * 4 * self.kPrime_grid[:,None]**3 /( 2*np.pi )**3
                 if L==0 and l==lPrime:
                     correction = 4*self.kPrime_grid[:,None]**3/( 2*np.pi )**3*\
-                                (2*l+1)*(self.Integral_q0[i][:,None]**2 - 2*self.Integral_q0[i][:,None]*self.Integral[j]) 
+                                (2*l+1)*(self.I1_q0[i][:,None]**2 - 2*self.I1_q0[i][:,None]*self.I1[j]) 
                     correction0 = np.where(correction<0 , correction , 0.)
                     W1[i] += correction0
             
@@ -437,10 +474,12 @@ class pipeline:
         
         self.get_I1q0()
         self.get_I1()
+        self.get_I2()
+        self.get_I3()
         self.get_W1_atomic_response()
         self.get_K_atomic_response()
         
-        self.save_which(6,10)
+        self.save_which(6,12)
 
 
 
