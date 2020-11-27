@@ -18,7 +18,7 @@ class ARdata_class():
         self.kPrime_grid=None
         self.Atomic_Response_W1=None
         self.Atomic_Response_K=None
-        self.QNL_nllL_select=None   
+        self.quantum_numbers_nllL_select=None   
 
 
 T2k = lambda T,m : np.sqrt( (T+m)**2 - m**2 )
@@ -66,11 +66,11 @@ for i in range(len(files)):
     ARdata.kPrime_grid = np.asarray(f['kPrime_grid'])
     ARdata.Atomic_Response_W1 = np.asarray(f['Atomic_Response_W1'])
     ARdata.Atomic_Response_K = np.asarray(f['Atomic_Response_K'])
-    ARdata.QNL_nllL_select = np.asarray(f['QNL_nllL_select'])
+    ARdata.quantum_numbers_nllL_select = np.asarray(f['quantum_numbers_nllL_select'])
     ARdatasets.append(ARdata)
     f.close()
 
-QNs = [tuple(np.unique( ar.QNL_nllL_select[:,[0,1]] ,axis=0)[0]) for ar in ARdatasets] 
+QNs = [tuple(np.unique( ar.quantum_numbers_nllL_select[:,[0,1]] ,axis=0)[0]) for ar in ARdatasets] 
 print('\n > The quantum numbers available are \n > ' + str(QNs) )
 input('\n >>>>> Press Enter to continue... <<<<<')
 
@@ -90,6 +90,11 @@ for i in range(len(ARdatasets)):
     ER = k2T(ar.kPrime_grid,mElectron) + abs(E_B[n-1][l])
     K += ARinterp(ER,ar.Atomic_Response_K[0],ER_new=ER_new)
 
+try:
+    os.mkdir('OUTPUT2/')
+except:
+    pass
+    
 filename = 'OUTPUT2/'+name+'_Ktot.hdf5'
 
 try:

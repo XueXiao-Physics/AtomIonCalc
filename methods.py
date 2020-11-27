@@ -12,21 +12,20 @@ import mpmath as mp
 import scipy.integrate
 import h5py
 import sys
-from sympy.physics.wigner import gaunt
+from sympy.physics.wigner import gaunt, wigner_3j
 
 
 '''
-
 July 2020
 xuexiao@mail.itp.ac.cn
 xxueitp@gmail.com
 
+For simplicity, this program can only process one pair of (n,l) at a time.
 '''
 
 
 rv2real = lambda x: np.vectorize(np.real)(x)
 rv2float = lambda x : np.vectorize(float)(x)
-
 
 def Save(file_name,data_name,data):
 
@@ -35,11 +34,11 @@ def Save(file_name,data_name,data):
     try:
         f.create_dataset(data_name , data = data)
         print('**\''+file_name+'\'' ,'info :'  , '\''+data_name+'\'' , 'data saved')
-    except RuntimeError:
+    except:
         print('**\''+file_name+'\'' ,'error :'  , '\''+data_name+'\'' , 'data already exists!')
+        pass
 
     f.close()
-
 
 
 '''
@@ -50,21 +49,20 @@ main
 
 class pipeline:
 
-    def __init__(self,C,Z,n_list,E_B,Z_eff,fac):
-
-        self.C = C
-        self.Z = Z
-        self.n_list = n_list
-        self.E_B = E_B
-        self.Z_eff = Z_eff
-        self.fac = fac # impose a general normalization factor, K -> fac*K
-        self._create_entire_quantum_number_list()
-        self.set_demanded_n_l(None,None)
+    def __init__(self,C,Z,n_list,E_B,Z_eff,fac,file_name):
+        # Get the Whole picture
+        self.global_C = C
+        self.global_Z = Z
+        self.global_n_list = n_list
+        self.global_E_B = E_B
+        self.global_Z_eff = Z_eff
+        self.global_fac = fac # impose a general normalization factor, K -> fac*K
+        self.create_global_quantum_number_list()
+        self.file_name = file_name
         
         
 
-
-        self.QNL_nllL_select = None
+        self.QN_nllL = None
         self.r_grid = None
         self.kPrime_grid = None
         self.q_grid = None
@@ -74,23 +72,17 @@ class pipeline:
         self.Integral = None
         self.Atomic_Response_W1 = None
         self.Atomic_Response_K = None
-        save_list = [self.QNL_nllL_select,self.r_grid]
 
 
-
-    def set_file_name(self, file_name):
-
-        self.file_name = file_name
-
-
+   
 
     def save_which(self,start=0,stop=10):
 
-        name_list = ['QNL_nllL_select','r_grid','kPrime_grid','q_grid',\
+        name_list = ['QN_nllL','r_grid','kPrime_grid','q_grid',\
                 'R_nlr_list','R_final_nllkr_List','Spherical_Jn_Lqr_List',
                 'Integral','Atomic_Response_W1','Atomic_Response_K']
 
-        save_list = [self.QNL_nllL_select,self.r_grid,self.kPrime_grid,self.q_grid,\
+        save_list = [self.QN_nllL,self.r_grid,self.kPrime_grid,self.q_grid,\
                 self.R_nlr_list,self.R_final_nllkr_List,self.Spherical_Jn_Lqr_List,
                 self.Integral,self.Atomic_Response_W1,self.Atomic_Response_K]
 
@@ -103,24 +95,19 @@ class pipeline:
 
 
 
+    # global_QN = global quantum numbers for the element.
+    def create_global_quantum_number_list(self,Lmax=7):
 
-    def _create_entire_quantum_number_list(self,Lmax=7):
+        global_QN = np.empty((0,4))
 
-        QNL_nllL = np.empty((0,4))
-
-        for n in range(1,len(self.C)+1):    
-            for l in range(len(self.C[n-1])):        
+        for n in range(1,len(self.global_C)+1):    
+            for l in range(len(self.global_C[n-1])):        
                 for lPrime in range(Lmax+1):                            
                     for L in range(abs(l-lPrime), l+lPrime+1):                
                         vec = np.array([n,l,lPrime,L])
-                        QNL_nllL = np.vstack([QNL_nllL,vec])
+                        global_QN = np.vstack([global_QN,vec])
                                         
-        self.QNL_nllL = QNL_nllL.astype(int)
-
-
-
-
-
+        self.global_QN = global_QN.astype(int)
 
 
 
@@ -130,7 +117,7 @@ class pipeline:
         x_grid,weight = ssp.p_roots(length)
         r_grid = 0.5*(rmax-rmin)*x_grid+0.5*(rmax+rmin)
 
-        self._N1 = int(length)
+        self._Nr = int(length)
         self.r_grid = r_grid
         self.r_weight = weight
         self.rmin = r_grid[0]
@@ -141,13 +128,10 @@ class pipeline:
 
 
 
-
-
-
     def set_kPrime_grid(self,kPrime_grid):
 
 
-        self._N2 = len(kPrime_grid)
+        self.Nk = len(kPrime_grid)
         self.kPrime_grid = kPrime_grid
         
         #print('kmin','%.3e'%self.kPrime_grid[0],'kmax','%.3e'%self.kPrime_grid[-1],'eV')
@@ -155,14 +139,9 @@ class pipeline:
 
 
 
-
-
-
-
-
     def set_q_grid(self,q_grid):
 
-        self._N3 = len(q_grid)
+        self.Nq = len(q_grid)
         self.q_grid = q_grid
 
         #print('qmin','%.3e'%self.q_grid[0],'qmax','%.3e'%self.q_grid[-1],'eV')
@@ -171,38 +150,24 @@ class pipeline:
 
 
 
-
-
-
     def set_demanded_n_l(self,n,l):
+    
+        Save(self.file_name,'n',n)
+        Save(self.file_name,'l',l)
+        Save(self.file_name,'E_B',self.global_E_B[n-1][l])
         
-        if (n==None)*(l==None):
-            QNL_nllL_select = self.QNL_nllL
 
-        else:
-            f1 = np.tile(self.QNL_nllL[:,:],(np.size(n),1,1))
-            f2 = np.tile(n,(len(self.QNL_nllL),1)).T
-            f3 = np.tile(l,(len(self.QNL_nllL),1)).T
+        #f1 = np.tile(self.global_QN[:,:],(np.size(n),1,1))
+        #f2 = np.tile(n,(len(self.global_QN),1)).T
+        #f3 = np.tile(l,(len(self.global_QN),1)).T
 
-            find = np.where(  (f1[:,:,0]==f2)*(f1[:,:,1]==f3) )
-            QNL_nllL_select = f1[find[0],find[1],:]
+        #find = np.where(  (f1[:,:,0]==f2)*(f1[:,:,1]==f3) )
+        self.QN_nllL = self.global_QN[np.where( (self.global_QN[:,[0,1]]==[n,l]).all(axis=1)  )]
 
-
-        QNL_nl, QNL_nl_inverse = np.unique( QNL_nllL_select[:,[0,1]],axis=0, return_inverse=True)
-        QNL_nll, QNL_nll_inverse = np.unique( QNL_nllL_select[:,[0,1,2]],axis=0, return_inverse=True)
-        QNL_L, QNL_L_inverse = np.unique( QNL_nllL_select[:,[3]],axis=0, return_inverse=True)
-
-        self.QNL_nllL_select = QNL_nllL_select
-
-        self._QNL_nl = QNL_nl
-        self._QNL_nl_inverse = QNL_nl_inverse
-        self._QNL_nll = QNL_nll
-        self._QNL_nll_inverse = QNL_nll_inverse
-        self._QNL_L = QNL_L
-        self._QNL_L_inverse = QNL_L_inverse 
-
-        print((n,l))
-
+        
+        self.QN_nl = np.unique( self.QN_nllL[:,[0,1]],axis=0)
+        self.QN_nll = np.unique( self.QN_nllL[:,[0,1,2]],axis=0)
+        self.QN_L = np.unique( self.QN_nllL[:,[3]],axis=0)
 
 
 
@@ -210,9 +175,9 @@ class pipeline:
 
         r = np.tile(r,(1,1))
 
-        C_vec = np.array(self.C[n-1][l])[:,None]
-        Z_vec = np.array(self.Z[l])[:,None]
-        n_vec = np.array(self.n_list[l])[:,None]
+        C_vec = np.array(self.global_C[n-1][l])[:,None]
+        Z_vec = np.array(self.global_Z[l])[:,None]
+        n_vec = np.array(self.global_n_list[l])[:,None]
         factorize_vec =  ssp.factorial(2*n_vec)
         factor_vec = np.power(2*Z_vec, n_vec + 0.5) / np.sqrt(factorize_vec)
         
@@ -221,12 +186,13 @@ class pipeline:
         return rw
 
 
+
     def calculate_initial_rwf(self):
 
-        size = len(self._QNL_nl)
-        R_nlr_list = np.ndarray(( size , self._N1 ))
+        size = len(self.QN_nl)
+        R_nlr_list = np.ndarray(( size , self._Nr ))
         for it in range(size): 
-            n,l = self._QNL_nl[it]
+            n,l = self.QN_nl[it]
             R_nlr_list[it] = self._R_fun(n,l,self.r_grid)
 
         self.R_nlr_list = R_nlr_list
@@ -235,7 +201,7 @@ class pipeline:
     
     def _R_final_fun(self,n,l,lPrime,kPrime,r):
 
-        Z_eff = self.Z_eff
+        Z_eff = self.global_Z_eff
         # notice it is a complex function
         hyp1f1 = np.vectorize(mp.hyp1f1)
 
@@ -253,10 +219,10 @@ class pipeline:
         
         kPrime_mesh, r_mesh = np.meshgrid(self.kPrime_grid, self.r_grid, indexing='ij')
 
-        size = len(self._QNL_nll)
-        R_final_nllkr_List = np.ndarray((size,self._N2,self._N1))  
+        size = len(self.QN_nll)
+        R_final_nllkr_List = np.ndarray((size,self.Nk,self._Nr))  
         for it in tqdm.tqdm( range(size) ):           
-            n,l,lPrime = self._QNL_nll[it]            
+            n,l,lPrime = self.QN_nll[it]            
             R_final_nllkr_List[it]  = rv2float(rv2real(self._R_final_fun(n,l,lPrime,kPrime_mesh,r_mesh)))
          
         
@@ -273,77 +239,145 @@ class pipeline:
 
         q_mesh,r_mesh = np.meshgrid(self.q_grid,self.r_grid,indexing='ij')
 
-        size = len(self._QNL_L)
-        Spherical_Jn_Lqr_List = np.ndarray((size,self._N3,self._N1))
+        size = len(self.QN_L)
+        Spherical_Jn_Lqr_List = np.ndarray((size,self.Nq,self._Nr))
         for it in range(size):       
-            L = self._QNL_L[it]              
-            Spherical_Jn_Lqr_List[it] = ssp.spherical_jn(L ,q_mesh*r_mesh)   
-  
+            L = self.QN_L[it]              
+            Spherical_Jn_Lqr_List[it] = ssp.spherical_jn(L ,q_mesh*r_mesh)
+        
         self.Spherical_Jn_Lqr_List = Spherical_Jn_Lqr_List 
+        
          
 
 
 
-       
+    # To calculate I1(q=0,kPrime) with (n,l,lPrime=l,L=0), it is to be subtracted from I1.
+    def get_I1q0(self):
+        size = len(self.QN_nl)
+        Integral = np.ndarray((size,self.Nk))
+        
+        L0_index = np.where(self.QN_L ==0)[0] # find L=0 in L list
+
+        for it in range(size):
+            n,l = self.QN_nl[it]
+            index_nl = np.where( (self.QN_nl==np.array([n,l])[None,:]).all(axis=1) )[0]
+            index_nll = np.where( (self.QN_nll==np.array([n,l,l])[None,:]).all(axis=1) )[0] # find (n,l,lPrime=l)
+            # (List,k,r)
+            Integrand = (self.r_grid**2)[None,None,:] * self.R_nlr_list[index_nl,None,:]\
+                    * self.R_final_nllkr_List[index_nll,:,:] * 1 #ssp.spherical_jn(0 ,0*r_mesh) = 1
+            # (List,k)        
+            Integral[it] = 0.5*(self.rmax-self.rmin)* np.sum(self.r_weight[None,None,:]*Integrand,axis=2)
+            
+        self.Integral_q0 = Integral
+            
+            
 
 
 
+
+    # I1, (n,l,lPrime,L)
+    # (List,k,q,r)
     def get_I1(self):
  
-        size = len(self.QNL_nllL_select)
-        Integral = np.ndarray((size,self._N2,self._N3))
+        size = len(self.QN_nllL)
+        Integral = np.ndarray((size,self.Nk,self.Nq))
 
-        for it in tqdm.tqdm( range(size) ) :
-            it_nl = self._QNL_nl_inverse[it]
-            it_nll = self._QNL_nll_inverse[it]
-            it_L = self._QNL_L_inverse[it]
+        for it in range(size):
+            n,l,lPrime,L = self.QN_nllL[it]
+            
+            index_nl = np.where( (self.QN_nl[:,:]==[n,l]).all(axis=1) )[0]
+            index_nll = np.where( (self.QN_nll[:,:]==[n,l,lPrime]).all(axis=1) )[0]
+            index_L = np.where( (self.QN_L[:,:]==[L]).all(axis=1) )[0]
+            
 
-            Integrand = (self.r_grid**2)[None,None,None,:] * self.R_nlr_list[it_nl,None,None,:]\
-                    * self.R_final_nllkr_List[it_nll,:,None,:] * self.Spherical_Jn_Lqr_List[it_L,None,:,:]
-                     
-            Integral[it] = 0.5*(self.rmax-self.rmin)* np.sum(self.r_weight[None,None,None,:]*Integrand,axis=3)  
+            Integrand = (self.r_grid**2)[None,None,None,:] * self.R_nlr_list[index_nl,None,None,:]\
+                    * self.R_final_nllkr_List[index_nll,:,None,:] * self.Spherical_Jn_Lqr_List[index_L,None,:,:]
+                         
+            Integral_raw = 0.5*(self.rmax-self.rmin)* np.sum(self.r_weight[None,None,None,:]*Integrand,axis=3)
+            
+            
+            #if l==lPrime and L==0:
+            #    Integral_new = Integral_raw - self.Integral_q0[index_nl][:,None]
+            #    Integral_raw = np.where(abs(Integral_new)<abs(Integral_raw) , Integral_new , Integral_raw)
+            #    print('subtracted')
+                
+            Integral[it] = Integral_raw
+            
 
         self.Integral = Integral
+         
         
-    
 
-
+        
+        
 
 
     def get_W1_atomic_response(self):
+        
+        
+        '''
+        size = len(self.QN_nllL)
+        w1_raw = np.zeros([size,self.Nk,self.Nq])
+        for i in range(size):
+            n,l,lPrime,L = self.QN_nllL[i]
+            coeff = (2*l+1)*(2*lPrime+1)*(2*L+1)*wigner_3j(l,lPrime,L,0,0,0)**2
+            w1_raw[i] = Integral[i] * coeff * 4 * self.kPrime_grid[None,:,None]**3 /( 2*np.pi )**2
+        '''
+            
+        # sum up
+        size0 = len(self.QN_nl)
+        W1 = np.zeros([size0,self.Nk,self.Nq])
+        for i in range(size0):
+            n,l = self.QN_nl[i]
+            index_nllL = np.where( ( self.QN_nllL[:,[0,1]]==[n,l]  ).all(axis=1) )[0]
+            for j in index_nllL:
+                n,l,lPrime,L = self.QN_nllL[j]
+                coeff = (2*l+1)*(2*lPrime+1)*(2*L+1)*wigner_3j(l,lPrime,L,0,0,0)**2
+                W1[i] = W1[i] + self.Integral[j]**2 * coeff * 4 * self.kPrime_grid[:,None]**3 /( 2*np.pi )**3
+                if L==0 and l==lPrime:
+                    correction = 4*self.kPrime_grid[:,None]**3/( 2*np.pi )**3*\
+                                (2*l+1)*(self.Integral_q0[i][:,None]**2 - 2*self.Integral_q0[i][:,None]*self.Integral[j]) 
+                    correction0 = np.where(correction<0 , correction , 0.)
+                    W1[i] += correction0
+            
+            
+        self.Atomic_Response_W1 = self.global_fac * W1   
+        
+    
+        '''
 
         # make a general list with m and m'
-        QNL_nllLmm = np.empty((0,6))
+        QNmm = np.empty((0,6))
     
-        for n,l,lPrime,L in self.QNL_nllL_select:
+        for n,l,lPrime,L in self.QN_nllL:
             for m in range(-l,l+1):
                 for mPrime in range(-lPrime,lPrime+1):
                     add = [n,l,lPrime,L,m,mPrime]
-                    QNL_nllLmm = np.vstack([QNL_nllLmm,add])
+                    QNmm = np.vstack([QNmm,add])
 
-        QNL_nllLmm = QNL_nllLmm.astype(int)
-        QNL_nllLmm_Aux = np.unique(QNL_nllLmm[:,:4],axis=0,return_inverse=True)[1]
+        QNmm = QNmm.astype(int)
+        QNmm_Aux = np.unique(QNmm[:,:4],axis=0,return_inverse=True)[1]
 
 
         # calculating integral's coefficients 
         coeff_f12 = np.empty(0)
-        for n,l,lPrime,L,m,mPrime in QNL_nllLmm:            
+        for n,l,lPrime,L,m,mPrime in QNmm:            
             n,l,lPrime,L,m,mPrime = int(n),int(l),int(lPrime),int(L),int(m),int(mPrime)            
             add = np.sqrt(4*np.pi) * 1j**L * (-1.)**mPrime * np.sqrt(2*L+1) * \
                         float( gaunt(l,lPrime,L,m,-mPrime,0) )            
             coeff_f12 = np.append(coeff_f12,add)
-        raw_f12 = coeff_f12[:,None,None] * self.Integral[QNL_nllLmm_Aux,:,:]
+        raw_f12 = coeff_f12[:,None,None] * self.Integral[QNmm_Aux,:,:]
         del coeff_f12 
 
 
 
         # make a shorter list in order to sum up all the L
-        QNL_nllmm, QNL_nllmm_Aux = np.unique( QNL_nllLmm[:,[0,1,2,4,5]] , axis=0 , return_inverse=True )
-        QNL_nl , QNL_nl_Aux = np.unique( QNL_nllmm[:,[0,1]] , axis=0 , return_inverse=True )
-        f12_gen = lambda index : np.sum(raw_f12[np.where(QNL_nllmm_Aux==index)[0],:,:],axis=0)
-        f12 = np.zeros((len(QNL_nllmm) ,  self._N2   , self._N3  ), dtype=complex)
+        QN_nllmm, QN_nllmm_Aux = np.unique( QNmm[:,[0,1,2,4,5]] , axis=0 , return_inverse=True )
+        QN_nl , QN_nl_Aux = np.unique( QN_nllmm[:,[0,1]] , axis=0 , return_inverse=True )
+        f12_gen = lambda index : np.sum(raw_f12[np.where(QN_nllmm_Aux==index)[0],:,:],axis=0)
+        f12 = np.zeros((len(QN_nllmm) ,  self.Nk   , self.Nq  ), dtype=complex)
 
-        for it in range(len(QNL_nllmm)):
+        for it in range(len(QN_nllmm)):
             f12[it] = f12_gen(it)
         del raw_f12
 
@@ -351,16 +385,19 @@ class pipeline:
         # calculating w1 without summation
         raw_w1 = np.abs(f12)**2
         del f12
-
+        
 
         # calculating W1
-        size = len(QNL_nl)
-        Atomic_Response_W1 = np.zeros([size, self._N2, self._N3])
+        size = len(QN_nl)
+        Atomic_Response_W1 = np.zeros([size, self.Nk, self.Nq])
         for it in range(size):
-            Atomic_Response_W1[it] = np.sum( raw_w1[ np.where(QNL_nl_Aux==it)[0],:,:] ,axis=0)\
+            Atomic_Response_W1[it] = np.sum( raw_w1[ np.where(QN_nl_Aux==it)[0],:,:] ,axis=0)\
              * 4 * (self.kPrime_grid**3)[None,:,None] / (2*np.pi)**3
 
-        self.Atomic_Response_W1 = self.fac * Atomic_Response_W1
+        self.Atomic_Response_W1 = self.global_fac * Atomic_Response_W1
+        '''
+        
+        
         
 
 
@@ -374,11 +411,11 @@ class pipeline:
         W1 = self.Atomic_Response_W1
         Ee_grid = np.sqrt( self.kPrime_grid**2 + mElectron**2 ) - mElectron
         
-        counts = len(self._QNL_nl)
-        K = np.zeros(( counts ,self._N2,self._N3))
+        counts = len(self.QN_nl)
+        K = np.zeros(( counts ,self.Nk,self.Nq))
  
         for it in range(counts):
-            n,l = self._QNL_nl[it]
+            n,l = self.QN_nl[it]
             K[it] = W1[it]*(aEM*mElectron)**2/4./mElectron/Ee_grid[:,None]
 
         self.Atomic_Response_K = K
@@ -391,17 +428,19 @@ class pipeline:
 
     def run_all_calculations(self):
         self.save_which(0,4)
-
+        
         self.calculate_initial_rwf()
         self.calculate_final_rwf()
         self.calculate_spherical_Jn_Lqr_List()
+        
+        self.save_which(4,6)
+        
+        self.get_I1q0()
         self.get_I1()
-        self.save_which(4,8)
-
-
         self.get_W1_atomic_response()
         self.get_K_atomic_response()
-        self.save_which(8,10)
+        
+        self.save_which(6,10)
 
 
 

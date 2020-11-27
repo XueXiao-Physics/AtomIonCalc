@@ -34,9 +34,12 @@ input("\n >>>>> Press Enter to create directory... <<<<<")
 #==========================================================================
 # directory
 try:
-    os.mkdir('OUTPUT/'+name)
-    print(' > \'OUTPUT/'+name+'\'','created')
-    input("\n >>>>> Press Enter to continue... <<<<<")  
+    try:
+        os.mkdir('OUTPUT/')
+    except:
+        os.mkdir('OUTPUT/'+name)
+        print(' > \'OUTPUT/'+name+'\'','created')
+        input("\n >>>>> Press Enter to continue... <<<<<")  
 except FileExistsError:
     print(' > The','\'OUTPUT/'+name+'\'','direction already exists, \n > please delete or rename it first for data safety reasons,','\n > this program will not do it for you.')
     arg = input("\n >>>>> Are you sure you want to continue?(y/n)... <<<<<")
@@ -71,13 +74,13 @@ input("\n >>>>> If alright, press Enter to continue... <<<<<")
 #=======================================================================
 print("\n\n\n\n ============================== INFO ============================== \n\n")
 # customizezd numeral accuracy
-N1,N2,N3 = 2**12,2**7,2**7
+Nr,Nk,Nq = 2**12,2**7,2**7
 rmin,rmax = 0,30*a0
-kPrime_grid = np.logspace(-1,2,N2)*keV
-q_grid = np.logspace(0,3,N3)*keV
+kPrime_grid = np.logspace(-1,2,Nk)*keV
+q_grid = np.logspace(0,3,Nq)*keV
 
 
-print(' > Gridding parameters : ','\n > ',[N1,N2,N3],'\n')
+print(' > Gridding parameters : ','\n > ',[Nr,Nk,Nq],'\n')
 print(' > rmin , rmax (1/eV) (Legendre Polynomials roots)','\n > ',[rmin,rmax],'\n')
 print(' > kPrime_min , kPrime_max (1/eV)','\n > ', [kPrime_grid.min() , kPrime_grid.max()],'\n')
 print(' > q_min , q_max (1/eV)','\n > ',[q_grid.min(),q_grid.max()],'\n')
@@ -101,17 +104,16 @@ for it in range(len(combination)):
     except KeyError: 
         fac = 1.
             
-    pipe = pipeline(C,Z,n_list,E_B,Z_eff,fac)
+    pipe = pipeline(C,Z,n_list,E_B,Z_eff,fac,names[it] )
 
-    pipe.set_demanded_n_l( [c[0]] , [c[1]] )
-    pipe.set_r_grid(rmin,rmax,N1) 
+    pipe.set_demanded_n_l( c[0] , c[1] )
+    pipe.set_r_grid(rmin,rmax,Nr) 
     pipe.set_kPrime_grid(kPrime_grid)
     pipe.set_q_grid(q_grid) 
-    pipe.set_file_name( names[it] )
-
-
+    
     pipelines.append(pipe)
     
+
 
 jobs = []
 for it in range(len(pipelines)):
