@@ -476,10 +476,13 @@ class pipeline:
         self.get_I1()
         self.get_I2()
         self.get_I3()
+        
+        self.save_which(6,10)
+        
         self.get_W1_atomic_response()
         self.get_K_atomic_response()
         
-        self.save_which(6,12)
+        self.save_which(10,12)
 
 
 
