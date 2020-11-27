@@ -82,8 +82,8 @@ q_grid = np.logspace(0,3,Nq)*keV
 
 print(' > Gridding parameters : ','\n > ',[Nr,Nk,Nq],'\n')
 print(' > rmin , rmax (1/eV) (Legendre Polynomials roots)','\n > ',[rmin,rmax],'\n')
-print(' > kPrime_min , kPrime_max (1/eV)','\n > ', [kPrime_grid.min() , kPrime_grid.max()],'\n')
-print(' > q_min , q_max (1/eV)','\n > ',[q_grid.min(),q_grid.max()],'\n')
+print(' > kPrime_min , kPrime_max (eV)','\n > ', [kPrime_grid.min() , kPrime_grid.max()],'\n')
+print(' > q_min , q_max (eV)','\n > ',[q_grid.min(),q_grid.max()],'\n')
 
 input("\n >>>>> If alright, press Enter to start calculation ... <<<<<")
 # interface end
