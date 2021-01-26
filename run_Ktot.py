@@ -70,7 +70,7 @@ for i in range(len(files)):
     ARdatasets.append(ARdata)
     f.close()
 
-QNs = [tuple(np.unique( ar.quantum_numbers_nllL_select[:,[0,1]] ,axis=0)[0]) for ar in ARdatasets] 
+QNs = [tuple(np.unique( ar.QN_nllL[:,[0,1]] ,axis=0)[0]) for ar in ARdatasets] 
 print('\n > The quantum numbers available are \n > ' + str(QNs) )
 input('\n >>>>> Press Enter to continue... <<<<<')
 
