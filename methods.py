@@ -465,14 +465,14 @@ class pipeline:
         self.calculate_final_rwf()
         self.calculate_spherical_Jn_Lqr_List()
         
-        self.save_which(4,6)
+        #self.save_which(4,6)
         
         self.get_I1q0()
         self.get_I1()
         self.get_I2()
         #self.get_I3()
         
-        self.save_which(6,10)
+        #self.save_which(6,10)
         
         self.get_W1_atomic_response()
         self.get_K_atomic_response()
