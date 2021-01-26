@@ -18,7 +18,7 @@ class ARdata_class():
         self.kPrime_grid=None
         self.Atomic_Response_W1=None
         self.Atomic_Response_K=None
-        self.quantum_numbers_nllL_select=None   
+        self.QN_nllL=None   
 
 
 T2k = lambda T,m : np.sqrt( (T+m)**2 - m**2 )
@@ -66,7 +66,7 @@ for i in range(len(files)):
     ARdata.kPrime_grid = np.asarray(f['kPrime_grid'])
     ARdata.Atomic_Response_W1 = np.asarray(f['Atomic_Response_W1'])
     ARdata.Atomic_Response_K = np.asarray(f['Atomic_Response_K'])
-    ARdata.quantum_numbers_nllL_select = np.asarray(f['quantum_numbers_nllL_select'])
+    ARdata.QN_nllL = np.asarray(f['QN_nllL'])
     ARdatasets.append(ARdata)
     f.close()
 

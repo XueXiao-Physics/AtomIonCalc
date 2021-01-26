@@ -475,7 +475,7 @@ class pipeline:
         self.get_I1q0()
         self.get_I1()
         self.get_I2()
-        self.get_I3()
+        #self.get_I3()
         
         self.save_which(6,10)
         
