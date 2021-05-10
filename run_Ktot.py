@@ -20,8 +20,8 @@ class ARdata_class():
         self.Atomic_Response_K=None
         self.QN_nllL=None   
 
-
-T2k = lambda T,m : np.sqrt( (T+m)**2 - m**2 )
+# m^2 + k^2 = (T + m)^2
+T2k = lambda T,m : np.sqrt( (T+m)**2 - m**2 ) 
 
 k2T = lambda k,m : np.sqrt( k**2 + m**2) - m
 

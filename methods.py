@@ -61,9 +61,9 @@ class pipeline:
         self.r_grid = None
         self.kPrime_grid = None
         self.q_grid = None
-        self.R_nlr_list = None
-        self.R_final_nllkr_List = None
-        self.Spherical_Jn_Lqr_List = None
+        self.R_nlr_Table = None
+        self.R_final_nllkr_Table = None
+        self.Spherical_Jn_Lqr_Table = None
         self.I1 = None
         self.I2 = None
         self.I3 = None
@@ -76,11 +76,11 @@ class pipeline:
     def save_which(self,start=0,stop=12):
 
         name_list = ['QN_nllL','r_grid','kPrime_grid','q_grid',
-                'R_nlr_list','R_final_nllkr_List','Spherical_Jn_Lqr_List',
+                'R_nlr_Table','R_final_nllkr_Table','Spherical_Jn_Lqr_Table',
                 'I1','I2','I3','Atomic_Response_W1','Atomic_Response_K']
 
         save_list = [self.QN_nllL,self.r_grid,self.kPrime_grid,self.q_grid,
-                self.R_nlr_list,self.R_final_nllkr_List,self.Spherical_Jn_Lqr_List,
+                self.R_nlr_Table,self.R_final_nllkr_Table,self.Spherical_Jn_Lqr_Table,
                 self.I1,self.I2,self.I3,self.Atomic_Response_W1,self.Atomic_Response_K]
 
         for i in range(start,stop):
@@ -93,7 +93,7 @@ class pipeline:
 
 
     # global_QN = global quantum numbers for the element.
-    def create_global_quantum_number_list(self,Lmax=7):
+    def create_global_quantum_number_Table(self,Lmax=50):
 
         global_QN = np.empty((0,4))
 
@@ -109,9 +109,9 @@ class pipeline:
 
 
 
-    def set_r_grid(self,rmin,rmax,length):
+    def set_r_grid(self,rmin,rmax,Nr):
 
-        x_grid,weight = ssp.p_roots(length)
+        x_grid,weight = ssp.p_roots(Nr)
         r_grid = 0.5*(rmax-rmin)*x_grid+0.5*(rmax+rmin)
 
         self._Nr = int(length)
@@ -174,7 +174,7 @@ class pipeline:
 
         C_vec = np.array(self.global_C[n-1][l])[:,None]
         Z_vec = np.array(self.global_Z[l])[:,None]
-        n_vec = np.array(self.global_n_list[l])[:,None]
+        n_vec = np.array(self.global_n_Table[l])[:,None]
         factorize_vec =  ssp.factorial(2*n_vec)
         factor_vec = np.power(2*Z_vec, n_vec + 0.5) / np.sqrt(factorize_vec)
         
@@ -187,12 +187,12 @@ class pipeline:
     def calculate_initial_rwf(self):
 
         size = len(self.QN_nl)
-        R_nlr_list = np.ndarray(( size , self._Nr ))
+        R_nlr_Table = np.ndarray(( size , self._Nr ))
         for it in range(size): 
             n,l = self.QN_nl[it]
-            R_nlr_list[it] = self._R_fun(n,l,self.r_grid)
+            R_nlr_Table[it] = self._R_fun(n,l,self.r_grid)
 
-        self.R_nlr_list = R_nlr_list
+        self.R_nlr_Table = R_nlr_Table
         
 
     
@@ -217,13 +217,13 @@ class pipeline:
         kPrime_mesh, r_mesh = np.meshgrid(self.kPrime_grid, self.r_grid, indexing='ij')
 
         size = len(self.QN_nll)
-        R_final_nllkr_List = np.ndarray((size,self.Nk,self._Nr))  
+        R_final_nllkr_Table = np.ndarray((size,self.Nk,self._Nr))  
         for it in tqdm.tqdm( range(size) ):           
             n,l,lPrime = self.QN_nll[it]            
-            R_final_nllkr_List[it]  = rv2float(rv2real(self._R_final_fun(n,l,lPrime,kPrime_mesh,r_mesh)))
+            R_final_nllkr_Table[it]  = rv2float(rv2real(self._R_final_fun(n,l,lPrime,kPrime_mesh,r_mesh)))
          
         
-        self.R_final_nllkr_List = R_final_nllkr_List
+        self.R_final_nllkr_Table = R_final_nllkr_Table
                   
 
 
@@ -231,18 +231,18 @@ class pipeline:
 
                     
 
-    def calculate_spherical_Jn_Lqr_List(self):
+    def calculate_spherical_Jn_Lqr_Table(self):
 
 
         q_mesh,r_mesh = np.meshgrid(self.q_grid,self.r_grid,indexing='ij')
 
         size = len(self.QN_L)
-        Spherical_Jn_Lqr_List = np.ndarray((size,self.Nq,self._Nr))
+        Spherical_Jn_Lqr_Table = np.ndarray((size,self.Nq,self._Nr))
         for it in range(size):       
             L = self.QN_L[it]              
-            Spherical_Jn_Lqr_List[it] = ssp.spherical_jn(L ,q_mesh*r_mesh)
+            Spherical_Jn_Lqr_Table[it] = ssp.spherical_jn(L ,q_mesh*r_mesh)
         
-        self.Spherical_Jn_Lqr_List = Spherical_Jn_Lqr_List 
+        self.Spherical_Jn_Lqr_Table = Spherical_Jn_Lqr_Table
         
          
 
@@ -260,8 +260,8 @@ class pipeline:
             index_nl = np.where( (self.QN_nl==np.array([n,l])[None,:]).all(axis=1) )[0]
             index_nll = np.where( (self.QN_nll==np.array([n,l,l])[None,:]).all(axis=1) )[0] # find (n,l,lPrime=l)
             # (List,k,r)
-            Integrand = (self.r_grid**2)[None,None,:] * self.R_nlr_list[index_nl,None,:]\
-                    * self.R_final_nllkr_List[index_nll,:,:] * 1. #ssp.spherical_jn(0 ,0*r_mesh) = 1
+            Integrand = (self.r_grid**2)[None,None,:] * self.R_nlr_Table[index_nl,None,:]\
+                    * self.R_final_nllkr_Table[index_nll,:,:] * 1. #ssp.spherical_jn(0 ,0*r_mesh) = 1
             # (List,k)        
             I1_q0[it] = 0.5*(self.rmax-self.rmin)* np.sum(self.r_weight[None,None,:]*Integrand,axis=2)
             
@@ -288,8 +288,8 @@ class pipeline:
             index_nll = np.where( (self.QN_nll[:,:]==[n,l,lPrime]).all(axis=1) )[0]
             index_L = np.where( (self.QN_L[:,:]==[L]).all(axis=1) )[0]            
 
-            Integrand = (self.r_grid**2)[None,None,None,:] * self.R_nlr_list[index_nl,None,None,:]\
-                    * self.R_final_nllkr_List[index_nll,:,None,:] * self.Spherical_Jn_Lqr_List[index_L,None,:,:]
+            Integrand = (self.r_grid**2)[None,None,None,:] * self.R_nlr_Table[index_nl,None,None,:]\
+                    * self.R_final_nllkr_Table[index_nll,:,None,:] * self.Spherical_Jn_Lqr_Table[index_L,None,:,:]
                          
             I1[it] = 0.5*(self.rmax-self.rmin)* np.sum(self.r_weight[None,None,None,:]*Integrand,axis=3)       
 
@@ -308,10 +308,10 @@ class pipeline:
             index_nll = np.where( (self.QN_nll[:,:]==[n,l,lPrime]).all(axis=1) )[0]
             index_L = np.where( (self.QN_L[:,:]==[L]).all(axis=1) )[0]            
             
-            dRdr = np.diff( self.Spherical_Jn_Lqr_List[:,:,:] , axis=2 )
+            dRdr = np.diff( self.Spherical_Jn_Lqr_Table[:,:,:] , axis=2 )
             dRdr = np.dstack([dRdr,dRdr[:,:,-1][:,:,None]])
-            Integrand = (self.r_grid**2)[None,None,None,:] * self.R_nlr_list[index_nl,None,None,:]\
-                    * self.R_final_nllkr_List[index_nll,:,None,:] * dRdr[index_L,None,:,:]
+            Integrand = (self.r_grid**2)[None,None,None,:] * self.R_nlr_Table[index_nl,None,None,:]\
+                    * self.R_final_nllkr_Table[index_nll,:,None,:] * dRdr[index_L,None,:,:]
                          
             I2[it] = 0.5*(self.rmax-self.rmin)* np.sum(self.r_weight[None,None,None,:]*Integrand,axis=3)
 
@@ -330,8 +330,8 @@ class pipeline:
             index_nll = np.where( (self.QN_nll[:,:]==[n,l,lPrime]).all(axis=1) )[0]
             index_L = np.where( (self.QN_L[:,:]==[L]).all(axis=1) )[0]            
             
-            Integrand = self.r_grid[None,None,None,:] * self.R_nlr_list[index_nl,None,None,:]\
-                    * self.R_final_nllkr_List[index_nll,:,None,:] * self.Spherical_Jn_Lqr_List[index_L,None,:,:]
+            Integrand = self.r_grid[None,None,None,:] * self.R_nlr_Table[index_nl,None,None,:]\
+                    * self.R_final_nllkr_Table[index_nll,:,None,:] * self.Spherical_Jn_Lqr_Table[index_L,None,:,:]
                          
             I3[it] = 0.5*(self.rmax-self.rmin)* np.sum(self.r_weight[None,None,None,:]*Integrand,axis=3)
             
@@ -463,13 +463,13 @@ class pipeline:
         
         self.calculate_initial_rwf()
         self.calculate_final_rwf()
-        self.calculate_spherical_Jn_Lqr_List()
+        self.calculate_spherical_Jn_Lqr_Table()
         
         #self.save_which(4,6)
         
         self.get_I1q0()
         self.get_I1()
-        self.get_I2()
+        #self.get_I2()
         #self.get_I3()
         
         #self.save_which(6,10)
