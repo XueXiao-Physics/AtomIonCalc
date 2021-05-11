@@ -41,9 +41,13 @@ try:
         
     os.mkdir('OUTPUT/'+name)
     print(' > \'OUTPUT/'+name+'\'','created')
-    input("\n >>>>> Press Enter to continue... <<<<<")  
+    
 except FileExistsError:
-    print(' > The','\'OUTPUT/'+name+'\'','direction already exists, \n > please delete or rename it first for data safety reasons,','\n > this program will not do it for you.')
+    print(' > Careful, \'OUTPUT/'+name+'\'','already exists') 
+    input("\n >>>>> Press Enter to continue... <<<<<")  
+
+'''
+    print(' > The','\'OUTPUT/'+name+'\'','directionary already exists, \n > please delete or rename it first for data safety reasons,','\n > this program will not do it for you.')
     arg = input("\n >>>>> Are you sure you want to continue?(y/n)... <<<<<")
     if arg =='n':
         sys.exit()
@@ -52,7 +56,8 @@ except FileExistsError:
     else:
         print(' > Argument not recognized.')
         sys.exit()
-    print("\n\n\n\n ============================== INFO ============================== \n\n")
+'''
+print("\n\n\n\n ============================== INFO ============================== \n\n")
 
 
 

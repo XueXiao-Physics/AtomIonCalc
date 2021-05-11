@@ -22,19 +22,25 @@ For simplicity, this program can only process one pair of (n,l) at a time.
 rv2real = lambda x: np.vectorize(np.real)(x)
 rv2float = lambda x : np.vectorize(float)(x)
 
-def Save(file_name,data_name,data):
+def Save(file_name,data_name,data,silence=False):
 
-    f = h5py.File(file_name,'a')
+    f = h5py.File(file_name,'r+')
 
     try:
         f.create_dataset(data_name , data = data)
-        print('**\''+file_name+'\'' ,'info :'  , '\''+data_name+'\'' , 'data saved')
-    except:
-        print('**\''+file_name+'\'' ,'error :'  , '\''+data_name+'\'' , 'data already exists!')
-        pass
+        if silence == False:
+            print('>\''+file_name+'\':', '\''+data_name+'\'' , 'saved')
+    except OSError:
+        del f[data_name]
+        f.create_dataset(data_name , data = data)
+        #data0 = f[data_name]
+        #data0[...] = data #renew the data
+        if silence == False:
+            print('>\''+file_name+'\':', '\''+data_name+'\'' , 'rewritten.')
 
     f.close()
-
+    
+    
 
 '''
 
@@ -93,7 +99,7 @@ class pipeline:
 
 
     # global_QN = global quantum numbers for the element.
-    def create_global_quantum_number_Table(self,Lmax=50):
+    def create_global_quantum_number_list(self,Lmax=100):
 
         global_QN = np.empty((0,4))
 
@@ -114,7 +120,7 @@ class pipeline:
         x_grid,weight = ssp.p_roots(Nr)
         r_grid = 0.5*(rmax-rmin)*x_grid+0.5*(rmax+rmin)
 
-        self._Nr = int(length)
+        self._Nr = int(Nr)
         self.r_grid = r_grid
         self.r_weight = weight
         self.rmin = r_grid[0]
@@ -174,7 +180,7 @@ class pipeline:
 
         C_vec = np.array(self.global_C[n-1][l])[:,None]
         Z_vec = np.array(self.global_Z[l])[:,None]
-        n_vec = np.array(self.global_n_Table[l])[:,None]
+        n_vec = np.array(self.global_n_list[l])[:,None]
         factorize_vec =  ssp.factorial(2*n_vec)
         factor_vec = np.power(2*Z_vec, n_vec + 0.5) / np.sqrt(factorize_vec)
         
@@ -218,15 +224,13 @@ class pipeline:
 
         size = len(self.QN_nll)
         R_final_nllkr_Table = np.ndarray((size,self.Nk,self._Nr))  
-        for it in tqdm.tqdm( range(size) ):           
+        for it in range(size) :           
             n,l,lPrime = self.QN_nll[it]            
-            R_final_nllkr_Table[it]  = rv2float(rv2real(self._R_final_fun(n,l,lPrime,kPrime_mesh,r_mesh)))
-         
-        
-        self.R_final_nllkr_Table = R_final_nllkr_Table
+            R_final_nllkr_Table[it]  = rv2real(self._R_final_fun(n,l,lPrime,kPrime_mesh,r_mesh))
+            self.R_final_nllkr_Table = R_final_nllkr_Table # constantly renew the data
+            Save(self.file_name,'R_final_nllkr_Table',self.R_final_nllkr_Table,silence=True)
+            print('Calculating R_final',it+1,'/',size,'\r',end='')
                   
-
-
 
 
                     
