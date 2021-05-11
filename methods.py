@@ -30,7 +30,7 @@ def Save(file_name,data_name,data,silence=False):
         f.create_dataset(data_name , data = data)
         if silence == False:
             print('>\''+file_name+'\':', '\''+data_name+'\'' , 'saved')
-    except OSError:
+    except ValueError:
         del f[data_name]
         f.create_dataset(data_name , data = data)
         #data0 = f[data_name]
