@@ -228,7 +228,9 @@ class pipeline:
         R_final_nllkr_Table = np.ndarray((size,self.Nk,self.Nr))  
         for it in range(size) :           
             n,l,lPrime = self.QN_nll[it]            
-            val , flag  = rv2real(self._R_final_fun(n,l,lPrime,kPrime_mesh,r_mesh))
+            val , flag  = self._R_final_fun(n,l,lPrime,kPrime_mesh,r_mesh)
+            val = rv2real(val)
+            
             if flag == 0:
                 break
             else:
