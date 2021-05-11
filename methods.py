@@ -209,14 +209,13 @@ class pipeline:
         hyp1f1 = np.vectorize(mp.hyp1f1)
         fac = 1 / np.math.factorial(2*lPrime+1)
         if fac == 0:
-            return 0.
+            return 0. , 0
         else:
             result = 4 * np.pi * (2*kPrime*r)**lPrime\
                     * np.exp(np.pi * Z_eff[n-1][l] /2/kPrime/a0 + np.real(ssp.loggamma(lPrime+1-1j*Z_eff[n-1][l]/kPrime/a0)) )*fac \
                     * np.exp(-1j*kPrime*r) \
                     * hyp1f1(lPrime+1+1j*Z_eff[n-1][l]/kPrime/a0,(2*lPrime+2),2j*kPrime*r )  
-
-            return result
+            return result , 1
 
 
 
@@ -229,8 +228,8 @@ class pipeline:
         R_final_nllkr_Table = np.ndarray((size,self.Nk,self.Nr))  
         for it in range(size) :           
             n,l,lPrime = self.QN_nll[it]            
-            val  = rv2real(self._R_final_fun(n,l,lPrime,kPrime_mesh,r_mesh))
-            if val == 0:
+            val , flag  = rv2real(self._R_final_fun(n,l,lPrime,kPrime_mesh,r_mesh))
+            if flag == 0:
                 break
             else:
                 R_final_nllkr_Table[it] = val
