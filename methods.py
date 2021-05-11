@@ -120,7 +120,7 @@ class pipeline:
         x_grid,weight = ssp.p_roots(Nr)
         r_grid = 0.5*(rmax-rmin)*x_grid+0.5*(rmax+rmin)
 
-        self._Nr = int(Nr)
+        self.Nr = int(Nr)
         self.r_grid = r_grid
         self.r_weight = weight
         self.rmin = r_grid[0]
@@ -193,7 +193,7 @@ class pipeline:
     def calculate_initial_rwf(self):
 
         size = len(self.QN_nl)
-        R_nlr_Table = np.ndarray(( size , self._Nr ))
+        R_nlr_Table = np.ndarray(( size , self.Nr ))
         for it in range(size): 
             n,l = self.QN_nl[it]
             R_nlr_Table[it] = self._R_fun(n,l,self.r_grid)
@@ -207,13 +207,16 @@ class pipeline:
         Z_eff = self.global_Z_eff
         # notice it is a complex function
         hyp1f1 = np.vectorize(mp.hyp1f1)
+        fac = 1 / np.math.factorial(2*lPrime+1)
+        if fac == 0:
+            return 0.
+        else:
+            result = 4 * np.pi * (2*kPrime*r)**lPrime\
+                    * np.exp(np.pi * Z_eff[n-1][l] /2/kPrime/a0 + np.real(ssp.loggamma(lPrime+1-1j*Z_eff[n-1][l]/kPrime/a0)) )*fac \
+                    * np.exp(-1j*kPrime*r) \
+                    * hyp1f1(lPrime+1+1j*Z_eff[n-1][l]/kPrime/a0,(2*lPrime+2),2j*kPrime*r )  
 
-        result = 4 * np.pi * (2*kPrime*r)**lPrime\
-                * np.exp(np.pi * Z_eff[n-1][l] /2/kPrime/a0 + np.real(ssp.loggamma(lPrime+1-1j*Z_eff[n-1][l]/kPrime/a0)) )/ np.math.factorial(2*lPrime+1)\
-                * np.exp(-1j*kPrime*r) \
-                * hyp1f1(lPrime+1+1j*Z_eff[n-1][l]/kPrime/a0,(2*lPrime+2),2j*kPrime*r )  
-
-        return result
+            return result
 
 
 
@@ -223,14 +226,18 @@ class pipeline:
         kPrime_mesh, r_mesh = np.meshgrid(self.kPrime_grid, self.r_grid, indexing='ij')
 
         size = len(self.QN_nll)
-        R_final_nllkr_Table = np.ndarray((size,self.Nk,self._Nr))  
+        R_final_nllkr_Table = np.ndarray((size,self.Nk,self.Nr))  
         for it in range(size) :           
             n,l,lPrime = self.QN_nll[it]            
-            R_final_nllkr_Table[it]  = rv2real(self._R_final_fun(n,l,lPrime,kPrime_mesh,r_mesh))
-            self.R_final_nllkr_Table = R_final_nllkr_Table # constantly renew the data
-            Save(self.file_name,'R_final_nllkr_Table',self.R_final_nllkr_Table,silence=True)
-            print('Calculating R_final',it+1,'/',size,'\r',end='')
-                  
+            val  = rv2real(self._R_final_fun(n,l,lPrime,kPrime_mesh,r_mesh))
+            if val == 0:
+                break
+            else:
+                R_final_nllkr_Table[it] = val
+                self.R_final_nllkr_Table = R_final_nllkr_Table # constantly renew the data
+                Save(self.file_name,'R_final_nllkr_Table',self.R_final_nllkr_Table,silence=True)
+                print('Calculating R_final',it+1,'/',size,'n,l,l\'=',(n,l,lPrime),'\r',end='')
+        print('Calculation Finished.')          
 
 
                     
@@ -241,7 +248,7 @@ class pipeline:
         q_mesh,r_mesh = np.meshgrid(self.q_grid,self.r_grid,indexing='ij')
 
         size = len(self.QN_L)
-        Spherical_Jn_Lqr_Table = np.ndarray((size,self.Nq,self._Nr))
+        Spherical_Jn_Lqr_Table = np.ndarray((size,self.Nq,self.Nr))
         for it in range(size):       
             L = self.QN_L[it]              
             Spherical_Jn_Lqr_Table[it] = ssp.spherical_jn(L ,q_mesh*r_mesh)
