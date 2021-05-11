@@ -24,7 +24,7 @@ rv2float = lambda x : np.vectorize(float)(x)
 
 def Save(file_name,data_name,data,silence=False):
 
-    f = h5py.File(file_name,'r+')
+    f = h5py.File(file_name,'a')
 
     try:
         f.create_dataset(data_name , data = data)
