@@ -20,7 +20,10 @@ For simplicity, this program can only process one pair of (n,l) at a time.
 
 
 rv2real = lambda x: np.vectorize(np.real)(x)
+rv2imag = lambda x: np.vectorize(np.imag)(x)
 rv2float = lambda x : np.vectorize(float)(x)
+rv2log = lambda x : np.vectorize(mp.log)(x)
+rv2exp = lambda x : np.vectorize(mp.exp)(x)
 
 def Save(file_name,data_name,data,silence=False):
 
@@ -29,14 +32,14 @@ def Save(file_name,data_name,data,silence=False):
     try:
         f.create_dataset(data_name , data = data)
         if silence == False:
-            print('>\''+file_name+'\':', '\''+data_name+'\'' , 'saved')
+            print('>>\''+file_name+'\':', '\''+data_name+'\'' , 'saved')
     except ValueError:
         del f[data_name]
         f.create_dataset(data_name , data = data)
         #data0 = f[data_name]
         #data0[...] = data #renew the data
         if silence == False:
-            print('>\''+file_name+'\':', '\''+data_name+'\'' , 'rewritten.')
+            print('>>\''+file_name+'\':', '\''+data_name+'\'' , 'rewritten.')
 
     f.close()
     
@@ -209,13 +212,29 @@ class pipeline:
         hyp1f1 = np.vectorize(mp.hyp1f1)
         fac = 1 / np.math.factorial(2*lPrime+1)
         if fac == 0:
-            return 0. , 0
+            result = 0.
+            flag = 0
         else:
+            hyp1f1_table = hyp1f1(lPrime+1+1j*Z_eff[n-1][l]/kPrime/a0,(2*lPrime+2),2j*kPrime*r ) 
+            part1 = lPrime*np.log(2*kPrime*r)            
+            part2 = rv2log(hyp1f1_table)
+            part3 = -1J*kPrime*r
+            part = rv2real(rv2exp(part1+part2+part3)) # It is to avoid divergence
+            
+            '''
             result = 4 * np.pi * (2*kPrime*r)**lPrime\
-                    * np.exp(np.pi * Z_eff[n-1][l] /2/kPrime/a0 + np.real(ssp.loggamma(lPrime+1-1j*Z_eff[n-1][l]/kPrime/a0)) )*fac \
-                    * np.exp(-1j*kPrime*r) \
-                    * hyp1f1(lPrime+1+1j*Z_eff[n-1][l]/kPrime/a0,(2*lPrime+2),2j*kPrime*r )  
-            return result , 1
+                    * np.exp(np.pi * Z_eff[n-1][l] /2/kPrime/a0  \
+                   + np.real(ssp.loggamma(lPrime+1-1j*Z_eff[n-1][l]/kPrime/a0))  )*fac \
+                   * np.exp(-1j*kPrime*r) \
+                   * hyp1f1(lPrime+1+1j*Z_eff[n-1][l]/kPrime/a0,(2*lPrime+2),2j*kPrime*r )
+            '''
+            result = 4 * np.pi * part\
+                    * np.exp(np.pi * Z_eff[n-1][l] /2/kPrime/a0  \
+                   + np.real(ssp.loggamma(lPrime+1-1j*Z_eff[n-1][l]/kPrime/a0))  )*fac
+            flag = 1
+            
+            
+        return result , flag
 
 
 
@@ -229,16 +248,16 @@ class pipeline:
         for it in range(size) :           
             n,l,lPrime = self.QN_nll[it]            
             val , flag  = self._R_final_fun(n,l,lPrime,kPrime_mesh,r_mesh)
-            val = rv2real(val)
+            R_final_nllkr_Table[it] = val
+            self.R_final_nllkr_Table = R_final_nllkr_Table # constantly renew the data
+            Save(self.file_name,'R_final_nllkr_Table',self.R_final_nllkr_Table,silence=True)
+            print('>> Calculating R_final',it+1,'/',size,'n,l,l\'=',(n,l,lPrime),'\r',end='')
             
             if flag == 0:
-                break
-            else:
-                R_final_nllkr_Table[it] = val
-                self.R_final_nllkr_Table = R_final_nllkr_Table # constantly renew the data
-                Save(self.file_name,'R_final_nllkr_Table',self.R_final_nllkr_Table,silence=True)
-                print('Calculating R_final',it+1,'/',size,'n,l,l\'=',(n,l,lPrime),'\r',end='')
-        print('Calculation Finished.')          
+                print('\n>> Calculation Terminated at','n,l,l\'=',(n,l,lPrime))
+                break                
+
+        print('\n>> Calculation Finished for','n,l,l\'=',(n,l,lPrime))          
 
 
                     
