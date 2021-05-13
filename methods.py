@@ -255,9 +255,10 @@ class pipeline:
             
             if flag == 0:
                 print('\n>> Calculation Terminated at','n,l,l\'=',(n,l,lPrime))
-                break                
-
-        print('\n>> Calculation Finished for','n,l,l\'=',(n,l,lPrime))          
+                break     
+                
+        if flag == 1:
+            print('\n>> Calculation Finished at','n,l,l\'=',(n,l,lPrime))          
 
 
                     
