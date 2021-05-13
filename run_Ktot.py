@@ -5,6 +5,7 @@ import sys
 import os
 import glob
 import h5py
+import scipy.interpolate as si
 
 '''
 
@@ -12,6 +13,7 @@ Preparations (tools)
 
 '''
 # load the file
+
 class ARdata_class():
     def __init__(self):
         self.q_grid=None
@@ -20,6 +22,7 @@ class ARdata_class():
         self.Atomic_Response_K=None
         self.QN_nllL=None   
 
+
 # m^2 + k^2 = (T + m)^2
 T2k = lambda T,m : np.sqrt( (T+m)**2 - m**2 ) 
 
@@ -27,7 +30,7 @@ k2T = lambda k,m : np.sqrt( k**2 + m**2) - m
 
 p2v = lambda p,m : p/np.sqrt(m**2 + p**2)
 
-
+'''
 def ARinterp(ER,AR,ER_new):       
     AR_new = np.ndarray((len(ER_new),AR.shape[1]))    
     for it in range( AR.shape[1] ):    
@@ -35,7 +38,7 @@ def ARinterp(ER,AR,ER_new):
         ar_new = np.interp( ER_new , ER , ar ,left=0.,right=0.)
         AR_new[:,it] = ar_new       
     return AR_new
-
+'''
 
 '''
 Interface 
@@ -77,8 +80,10 @@ input('\n >>>>> Press Enter to continue... <<<<<')
 
 
 # Setting the interpolation options
-N_ER = 2**8
+N_ER = 2**10
 ER_new = np.logspace(1, 5, N_ER)
+N_q = 2**9
+q_new = np.logspace(3 , 6 , N_q)
 print('\n > ER is fixed between ',[ER_new.min(),ER_new.max()],' N = ',N_ER,' log spaced.')
 input('\n >>>>> Press Enter to run... <<<<<')
 
@@ -88,7 +93,11 @@ for i in range(len(ARdatasets)):
     ar = ARdatasets[i]
     n,l = QNs[i]
     ER = k2T(ar.kPrime_grid,mElectron) + abs(E_B[n-1][l])
-    K += ARinterp(ER,ar.Atomic_Response_K[0],ER_new=ER_new)
+    ifun = si.RectBivariateSpline(np.log10(ER),np.log10(ar.q_grid),\
+                                  ar.Atomic_Response_K[0])
+    mask1 = (ER_new>ER.min())*(ER_new<ER.max())
+    mask2 = (q_new>ar.q_grid.min())*(q_new<ar.q_grid.max())
+    K += ifun(np.log10(ER_new),np.log10(q_new)) * mask1[:,None]*mask2[None,:]
 
 try:
     os.mkdir('OUTPUT2/')
@@ -105,7 +114,7 @@ except OSError:
 else:
     f.create_dataset('Ktot',data=K)
     f.create_dataset('ER',data=ER_new)
-    f.create_dataset('q',data=ar.q_grid)
+    f.create_dataset('q',data=q_new)
     f.close()
 
     print('\n > The result is saved in',filename)
