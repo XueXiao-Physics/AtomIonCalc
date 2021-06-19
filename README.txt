@@ -14,7 +14,7 @@
     OUTPUT2/"Xe_Ktot.hdf5" 
     
 # In "Xe_Ktot.hdf5" one will see these data
-    "Ktot : K(q,ER)
+    "Ktot : K(ER,q) (the first index represents ER)
     "q" : the grid of q (eV)
     "ER" : the grid of ER (recoil energy eV)
     
