@@ -1,9 +1,12 @@
-from input_params import *
 from methods import *
 import multiprocess 
 import sys
+sys.path.append('input_params')
 import os
+import glob
 
+element_param_files = glob.glob('input_params/Param_*.py')
+element_names = [elem_file.split('/')[-1][6:-3] for elem_file in element_param_files]
 #=======================================================================
 #=======================================================================
 
@@ -14,19 +17,26 @@ Interface
 '''
 # nomenclature
 print(' > Welcome.')
+print(' > All elements available:')
+print(' > ',end='')
+for elem_name in element_names:
+    print(elem_name,end='  ')
+print('')
 
-arg = input('\n >>>>> Please type in the element you choose... \n > element : ')
+
+
+arg = input('\n >>>>> Please type in the element you choose: \n > element : ')
 
 #elements = [Xe,O,Al,Ca,Fe,Mg,Ni,Si,S,Na]
-elements = [Xe,O,Al,Ca,Fe,Mg,Ni,Si,S]
-element_dict = {e.name:e for e in elements}
 
 
-if arg not in element_dict.keys():
+
+if arg not in element_names:
     print(' > The element you ask for is not available.')
     sys.exit()
 else:
-    name,C,Z,n_list,E_B,Z_eff,semi_full = element_dict[arg].call()
+    elem = __import__('Param_'+arg)
+    name,C,Z,n_list,E_B,Z_eff,semi_full = elem.elem.call()
     
 input("\n >>>>> Press Enter to create directory... <<<<<")  
 
@@ -80,11 +90,11 @@ input("\n >>>>> If alright, press Enter to continue... <<<<<")
 
 #=======================================================================
 print("\n\n\n\n ============================== INFO ============================== \n\n")
-# customizezd numeral accuracy
+# customizezd numerical accuracy
 Nr,Nk,Nq = 2**12,2**7,2**7
 rmin,rmax = 0,30*a0
-kPrime_grid = np.logspace(-1,2,Nk)*keV
-q_grid = np.logspace(0,3,Nq)*keV
+kPrime_grid = np.logspace(-1,2,Nk)*keV # Define it freely.
+q_grid = np.logspace(0,3,Nq)*keV # Define it freely.
 
 
 print(' > Gridding parameters : ','\n > ',[Nr,Nk,Nq],'\n')

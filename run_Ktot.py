@@ -106,17 +106,12 @@ except:
     
 filename = 'OUTPUT2/'+name+'_Ktot.hdf5'
 
-try:
-    f = h5py.File(filename,'w-')
-except OSError:
-    print('\n > File name exists. Fail to save.')
-    input('\n >>>>> Press Enter to exit... <<<<<')
-else:
-    f.create_dataset('Ktot',data=K)
-    f.create_dataset('ER',data=ER_new)
-    f.create_dataset('q',data=q_new)
-    f.close()
+f = h5py.File(filename,'w')
+f.create_dataset('Ktot',data=K)
+f.create_dataset('ER',data=ER_new)
+f.create_dataset('q',data=q_new)
+f.close()
 
-    print('\n > The result is saved in',filename)
-    input('\n >>>>> Done. Press Enter to exit... <<<<<')
+print('\n > The result is saved in',filename)
+input('\n >>>>> Done. Press Enter to exit... <<<<<')
 
