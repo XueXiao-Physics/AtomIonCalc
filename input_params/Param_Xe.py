@@ -1,4 +1,4 @@
-from input_params.input_params import element,au
+from Element import element,au
 import numpy as np
 '''
 

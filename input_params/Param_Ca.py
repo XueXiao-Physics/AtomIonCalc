@@ -1,4 +1,4 @@
-from input_params.input_params import element,au
+from Element import element,au
 import numpy as np
 
 C = [[[1.176575, -0.119414, 0.000730, -0.086509, 0.000185, -0.000097, 0.000145, -0.000317, 0.000021, -0.000015, 0.000005] ] ,
