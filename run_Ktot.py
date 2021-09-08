@@ -47,15 +47,16 @@ Interface
 print(' > Welcome. Please run the code after you have got the data.')
 
 # Choose element
-elements = [Xe,O,Al,Ca,Fe,Mg,Ni,Si,S]
-element_dict = {e.name:e for e in elements}
+element_param_files = glob.glob('input_params/Param_*.py')
+element_names = [elem_file.split('/')[-1][6:-3] for elem_file in element_param_files]
 arg = input('\n >>>>> Please type in the element you choose... \n > element : ')
 
-if arg not in element_dict.keys():
+if arg not in element_names:
     print(' \n > The element you ask for is not available.')
     sys.exit()
 else:
-    name,C,Z,n_list,E_B,Z_eff,semi_full = element_dict[arg].call()
+    elem = __import__('Param_'+arg)
+    name,C,Z,n_list,E_B,Z_eff,semi_full = elem.elem.call()
     datadir = 'OUTPUT/'+name
     files = glob.glob(datadir+'/*')
 
