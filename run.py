@@ -16,7 +16,7 @@ Interface
 
 '''
 # nomenclature
-print(' > Welcome.')
+print(' > Welcome. Run the code to calculate the atomic response of each orbit.')
 print(' > All elements available:')
 print(' > ',end='')
 for elem_name in element_names:

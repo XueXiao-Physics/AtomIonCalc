@@ -30,7 +30,6 @@
     xxueitp@gmail.com
 ################################################################### 
 *** Citation:
-
 If you use our code in your publications, you shall cite following papers
 1. 
 2.
