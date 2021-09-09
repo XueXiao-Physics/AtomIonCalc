@@ -1,7 +1,7 @@
-from input_params import *
 from methods import *
 import multiprocess 
 import sys
+sys.path.append('input_params')
 import os
 import glob
 import h5py
@@ -44,7 +44,7 @@ def ARinterp(ER,AR,ER_new):
 Interface 
 '''
 
-print(' > Welcome. Please run the code after you have got the data.')
+print(' > Welcome. Run the code so you can get the atomic response function K(ER,q).')
 
 # Choose element
 element_param_files = glob.glob('input_params/Param_*.py')

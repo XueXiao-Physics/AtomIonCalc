@@ -91,7 +91,7 @@ input("\n >>>>> If alright, press Enter to continue... <<<<<")
 #=======================================================================
 print("\n\n\n\n ============================== INFO ============================== \n\n")
 # customizezd numerical accuracy
-Nr,Nk,Nq = 2**12,2**6,2**5
+Nr,Nk,Nq = 2**12,2**7,2**8
 rmin,rmax = 0,30*a0
 kPrime_grid = np.logspace(-1,2,Nk)*keV # Define it freely.
 q_grid = np.logspace(0,3,Nq)*keV # Define it freely.
