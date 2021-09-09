@@ -31,7 +31,7 @@
 ################################################################### 
 *** Citation:
 
-If you use our code in your research work, you shall cite following papers
+If you use our code in your publications, you shall cite following papers
 1. 
 2.
 
