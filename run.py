@@ -53,7 +53,7 @@ try:
     print(' > \'OUTPUT/'+name+'\'','created')
     
 except FileExistsError:
-    print(' > Careful, \'OUTPUT/'+name+'\'','already exists.') 
+    print(' > Careful, \'OUTPUT/'+name+'\'','already exists. Delete the results from the previous run to avoid possible error.') 
     input("\n >>>>> Press Enter to continue... <<<<<")  
 
 '''
