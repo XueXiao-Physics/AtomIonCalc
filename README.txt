@@ -26,6 +26,8 @@
 ** Notice: Only support python 3.
 ** Notice: install h5py first.
     pip install h5py
+** Notice: We suggest you install a higher mpmath version, for example
+    pip install 'mpmath>=1.2.1'
 ** Contact:
     xxueitp@gmail.com
 ################################################################### 
