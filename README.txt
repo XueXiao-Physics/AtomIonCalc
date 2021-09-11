@@ -35,6 +35,6 @@ If you use our code in your publications, you shall cite following papers
 2.
 
 and share the following link in your footnote.
-3. https://github.com/XueXiao-Physics/AtomicResponseDM 
+3. https://github.com/XueXiao-Physics/AtomIonCalc 
 
 
