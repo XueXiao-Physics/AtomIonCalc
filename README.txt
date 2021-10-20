@@ -1,4 +1,4 @@
-
+## Manual
 1. Use command below to calculate atomic response for each orbital
     python run.py
     
@@ -23,6 +23,7 @@
     "ER" : the grid of ER (recoil energy eV)
     
 ###################################################################  
+## Notice
 ** Notice: Only support python 3.
 ** Notice: Install h5py first.
     pip install h5py
@@ -31,9 +32,9 @@
 ** Contact:
     xxueitp@gmail.com
 ################################################################### 
-*** Citation:
+## Citation:
 If you use our code in your publications, you shall cite following papers
-1. 
+1. Yifan Chen, Bartosz Fornal, Pearl Sandick, Jing Shu, Xiao Xue, Yue Zhao, and Junchao Zong. (2021). Earth Shielding and Daily Modulation from Electrophilic Boosted Dark Matter. arXiv:2110.09685.
 2.
 
 and share the following link in your footnote.
