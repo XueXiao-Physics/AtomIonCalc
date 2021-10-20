@@ -15,7 +15,7 @@
     "q" : the grid of q (eV)
     "ER" : the grid of ER (recoil energy eV)
     
-> Note that the program only support python 3. To properly run the program, you need to install h5py and multiprocess first.
+> Note that the program only supports python 3. To properly run the program, you need to install h5py and multiprocess first.
 > 
     pip install h5py
     pip install multiprocess
