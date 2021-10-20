@@ -2,12 +2,12 @@
 > Use command below to calculate atomic response for each orbital
 > 
     python run.py
-> and type in the name of the element, eg. Xe, then follow the guidance. The results will be in "OUTPUT/Xe/".
+> type in the name of the element, eg. Xe, then follow the guidance. The results will be in "OUTPUT/Xe/".
 > You can also run the following code to calculate the total atomic response
 > 
     python run_Ktot.py
     
-> Type in the same element name (eg. Xe) and follow the guidance
+> type in the same element name (eg. Xe) and follow the guidance
 > The result would be in "OUTPUT2/Xe_Ktot.hdf5". 
 > In "Xe_Ktot.hdf5" one will see these data
 > 
