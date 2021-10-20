@@ -7,7 +7,7 @@
 > 
     python run_Ktot.py
     
-> type in the same element name (eg. Xe) and follow the guidance
+> type in the same element name (eg. Xe) and follow the guidance.
 > The result would be in "OUTPUT2/Xe_Ktot.hdf5". 
 > In "Xe_Ktot.hdf5" one will see these data
 > 
