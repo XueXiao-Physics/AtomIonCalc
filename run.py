@@ -81,11 +81,11 @@ names = []
 for n in range(1,1+len(C)):
     for l in range(len(C[n-1])):
         combination.append((n,l))
-        names.append(file_name+str(n)+orbit[l])
+        names.append(file_name+str(n)+orbit[l]+'.hdf5')
 print(' > All (n,l) combinations :')
 print(' > ',combination)
 
-input("\n >>>>> If alright, press Enter to continue... <<<<<")
+input("\n >>>>> If all-right, press Enter to continue... <<<<<")
 
 
 #=======================================================================
@@ -102,7 +102,7 @@ print(' > rmin , rmax (1/eV) (Legendre Polynomials roots)','\n > ',[rmin,rmax],'
 print(' > kPrime_min , kPrime_max (eV)','\n > ', [kPrime_grid.min() , kPrime_grid.max()],'\n')
 print(' > q_min , q_max (eV)','\n > ',[q_grid.min(),q_grid.max()],'\n')
 
-input("\n >>>>> If alright, press Enter to start calculation ... <<<<<")
+input("\n >>>>> If all-right, press Enter to start calculation ... <<<<<")
 # interface end
 #0.5*(rmax-rmin)*sum(weight*integrand)
 #=======================================================================
