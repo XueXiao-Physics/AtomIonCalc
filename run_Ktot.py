@@ -51,6 +51,7 @@ element_param_files = glob.glob('input_params/Param_*.py')
 element_names = [elem_file.split('/')[-1][6:-3] for elem_file in element_param_files]
 arg = input('\n >>>>> Please type in the element you choose... \n > element : ')
 
+
 if arg not in element_names:
     print(' \n > The element you ask for is not available.')
     sys.exit()
@@ -59,6 +60,17 @@ else:
     name,C,Z,n_list,E_B,Z_eff,semi_full = elem.elem.call()
     datadir = 'OUTPUT/'+name
     files = glob.glob(datadir+'/*')
+    files = [f for f in files if not os.path.isdir(f)] 
+
+    
+    
+arg2 = input('\n >>>>> Please type in the orbital information ... eg. 4s or 3 or press enter directly to represent all (available) oribial...\n > orbital info: ')
+files =  [f for f in files if arg2 in f.split('.')[0]]
+
+if len(files)==0:
+    print(' \n > No available orbital.')
+    sys.exit()
+              
 
 
 # Get the Quantum Numbers
@@ -105,7 +117,7 @@ try:
 except:
     pass
     
-filename = 'OUTPUT2/'+name+'_Ktot.hdf5'
+filename = 'OUTPUT2/'+name+arg2+'_Ktot.hdf5'
 
 f = h5py.File(filename,'w')
 f.create_dataset('Ktot',data=K)
