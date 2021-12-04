@@ -260,11 +260,11 @@ class pipeline:
             print('>> Calculating R_final',it+1,'/',size,'n,l,l\'=',(n,l,lPrime),'\r',end='')
             
             if flag == 0:
-                print('\n>> Calculation Terminated at','n,l,l\'=',(n,l,lPrime))
+                print('\n>> Calculation is finished for orbit','n,l=',(n,l,lPrime),'at l\'=',lPrime)
                 break     
                 
         if flag == 1:
-            print('\n>> Calculation Finished at','n,l,l\'=',(n,l,lPrime))          
+            print('\n>> Calculation is finished for orbit','n,l=',(n,l,lPrime),'at l\'=',lPrime)         
 
 
                     
