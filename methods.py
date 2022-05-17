@@ -10,8 +10,6 @@ from sympy.physics.wigner import gaunt, wigner_3j
 
 keV = 1e3
 GeV = 1e9
-gram = 5.60958884493318e23*GeV
-cm = 5.067730214314311e13/GeV
 mElectron =  511*keV
 aEM  =  1.0/137.035999139
 a0  =  1/aEM/mElectron #Bohr radius
